@@ -39,7 +39,16 @@ cHandler() {
 
 
 twoHandler() {
-    awk '{print $9}' $4
+    declare -A ipHits=()
+    while read -r ip status; do
+        [[ $status == 200 ]] || [[ $status == 302 ]] || [[ $status == 304 ]] && ((ipHits["$ip"]++))
+    done < <(awk '{print $1, $9}' $4)
+
+    for ip in "${!ipHits[@]}"; do
+        echo "${ipHits[$ip]} $ip"
+    done | sort -nr | head -n "$len" | while read -r hits ip; do
+        echo "$ip   $hits"
+    done
 }
 
 rHandler() {
